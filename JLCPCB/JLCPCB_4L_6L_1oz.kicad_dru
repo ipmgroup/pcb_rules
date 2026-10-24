@@ -1,0 +1,177 @@
+(version 1)
+# JLCPCB FR-4, 4 and 6 layer.
+# Outer copper 1 oz (35 µm). Inner copper is 0.5 oz by default.
+# Source: https://jlcpcb.com/capabilities/pcb-capabilities
+# Checked 2026-10-19.
+#
+# Track/space minimum on multilayer 1 oz is 0.09 / 0.09 mm on every copper layer.
+# Inside a BGA fan-out, 0.076 mm is allowed. Put those nets in the net class BGA.
+# Multilayer 2 oz is 0.15 / 0.15 mm. This file is not for 2 oz.
+#
+# Via absolute minimum is hole 0.15 mm / pad 0.25 mm.
+# A hole under 0.30 mm with a pad under 0.45 mm is a paid via option, so that
+# case is rejected here.
+# A 0.10 mm hole exists only for boards up to 1.0 mm thick with ENIG or OSP.
+#
+# PTH annular ring on multilayer 1 oz: absolute 0.15 mm, recommended 0.20 mm.
+# NPTH annular ring is 0.45 mm. NPTH hole minimum is 0.50 mm.
+# Plated slot width on multilayer is 0.35 mm, and the slot must be at least
+# twice as long as it is wide.
+#
+# Inner PTH hole to copper is 0.30 mm. Inner via hole to copper is 0.20 mm.
+# Outer PTH hole to track is 0.28 mm.
+# On 6-layer boards JLCPCB fills and caps vias by default (via-in-pad).
+# Boards with 6 or more layers do not offer HASL.
+#
+# Solder mask expansion is not set here. JLCPCB LDI (from June 2025) accepts a 1:1
+# opening, so set Board Setup > Solder Mask/Paste expansion to 0 mm.
+# Keep 0.09 mm from a mask opening to neighboring copper.
+# Mask bridge: 0.10 mm for green, red, yellow, blue, purple; 0.13 mm for black and white;
+# 0.20 mm for any color on 2 oz.
+#
+# Routed copper-to-edge is 0.20 mm. V-cut copper-to-edge is 0.40 mm; raise the edge
+# rule if the board is V-scored.
+# KiCad keeps the last matching rule.
+
+(rule "JLCPCB: Track width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.09mm))
+)
+
+(rule "JLCPCB: Track spacing"
+  (condition "A.Type == 'Track' && B.Type == 'Track'")
+  (constraint clearance (min 0.09mm))
+)
+
+(rule "JLCPCB: Copper clearance"
+  (condition "A.Type != 'Text' && A.Type != 'Graphic' && B.Type != 'Text' && B.Type != 'Graphic'")
+  (constraint clearance (min 0.09mm))
+)
+
+(rule "JLCPCB: SMD pad to SMD pad"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && B.Type == 'Pad' && B.Pad_Type == 'SMD' && A.Net != B.Net")
+  (constraint clearance (min 0.15mm))
+)
+
+(rule "JLCPCB: Via hole"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.15mm) (max 6.3mm))
+)
+
+(rule "JLCPCB: Via annular ring"
+  (condition "A.Type == 'Via'")
+  (constraint annular_width (min 0.05mm))
+)
+
+(rule "JLCPCB: Small via needs pad >= 0.45mm"
+  (condition "A.Type == 'Via' && A.Hole < 0.3mm")
+  (constraint via_diameter (min 0.45mm))
+)
+
+(rule "JLCPCB: PTH hole size"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && A.isPlated()")
+  (constraint hole_size (min 0.15mm) (max 6.3mm))
+)
+
+(rule "JLCPCB: PTH annular ring"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && A.isPlated()")
+  (constraint annular_width (min 0.15mm))
+)
+
+(rule "JLCPCB: NPTH hole size"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'NPTH, mechanical' && !A.isPlated()")
+  (constraint hole_size (min 0.5mm) (max 6.3mm))
+)
+
+(rule "JLCPCB: NPTH annular ring"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'NPTH, mechanical' && !A.isPlated()")
+  (constraint annular_width (min 0.45mm))
+)
+
+(rule "JLCPCB: Castellated hole"
+  (condition "A.Type == 'Pad' && A.Fabrication_Property == 'Castellated pad'")
+  (constraint hole_size (min 0.5mm))
+)
+
+(rule "JLCPCB: Plated slot width"
+  (condition "A.Type == 'Pad' && A.Hole_Size_X != A.Hole_Size_Y && A.isPlated()")
+  (constraint hole_size (min 0.35mm))
+)
+
+(rule "JLCPCB: Plated slot length"
+  (condition "A.Type == 'Pad'")
+  (constraint assertion "(A.Hole_Size_X == A.Hole_Size_Y) || (A.Hole_Size_X >= (2 * A.Hole_Size_Y)) || (A.Hole_Size_Y >= (2 * A.Hole_Size_X))")
+)
+
+(rule "JLCPCB: Non-plated slot width"
+  (condition "A.Type == 'Pad' && A.Hole_Size_X != A.Hole_Size_Y && !A.isPlated()")
+  (constraint hole_size (min 1.0mm))
+)
+
+(rule "JLCPCB: Pad hole to pad hole"
+  (condition "A.Type == 'Pad' && (A.Pad_Type == 'Through-hole' || A.Pad_Type == 'NPTH, mechanical') && B.Type == 'Pad' && (B.Pad_Type == 'Through-hole' || B.Pad_Type == 'NPTH, mechanical')")
+  (constraint hole_to_hole (min 0.45mm))
+)
+
+(rule "JLCPCB: Via hole to pad hole"
+  (condition "(A.Type == 'Via' && B.Type == 'Pad' && (B.Pad_Type == 'Through-hole' || B.Pad_Type == 'NPTH, mechanical')) || (A.Type == 'Pad' && (A.Pad_Type == 'Through-hole' || A.Pad_Type == 'NPTH, mechanical') && B.Type == 'Via')")
+  (constraint hole_to_hole (min 0.45mm))
+)
+
+(rule "JLCPCB: Via hole to via hole"
+  (condition "A.Type == 'Via' && B.Type == 'Via'")
+  (constraint hole_to_hole (min 0.2mm))
+)
+
+(rule "JLCPCB: Via hole to copper"
+  (condition "A.Type == 'Via' && (B.Type == 'Track' || B.Type == 'Zone')")
+  (constraint hole_clearance (min 0.2mm))
+)
+
+(rule "JLCPCB: PTH hole to track"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && A.isPlated() && B.Type == 'Track'")
+  (constraint hole_clearance (min 0.28mm))
+)
+
+(rule "JLCPCB: PTH hole to inner copper"
+  (layer inner)
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && A.isPlated() && (B.Type == 'Track' || B.Type == 'Zone')")
+  (constraint hole_clearance (min 0.3mm))
+)
+
+(rule "JLCPCB: BGA fan-out track width"
+  (condition "A.NetClass == 'BGA' && A.Type == 'Track'")
+  (constraint track_width (min 0.076mm))
+)
+
+(rule "JLCPCB: BGA fan-out track spacing"
+  (condition "A.NetClass == 'BGA' && A.Type == 'Track' && B.NetClass == 'BGA' && B.Type == 'Track'")
+  (constraint clearance (min 0.076mm))
+)
+
+(rule "JLCPCB: NPTH to track"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'NPTH, mechanical' && !A.isPlated() && B.Type == 'Track'")
+  (constraint hole_clearance (min 0.2mm))
+)
+
+(rule "JLCPCB: Silkscreen stroke"
+  (layer "?.SilkS")
+  (condition "A.Type == 'Text' || A.Type == 'Text Box'")
+  (constraint text_thickness (min 0.15mm))
+)
+
+(rule "JLCPCB: Silkscreen height"
+  (layer "?.SilkS")
+  (condition "A.Type == 'Text' || A.Type == 'Text Box'")
+  (constraint text_height (min 1.0mm))
+)
+
+(rule "JLCPCB: Pad to silkscreen"
+  (condition "A.Type == 'Pad' && ((A.existsOnLayer('F.Mask') && B.Layer == 'F.SilkS') || (A.existsOnLayer('B.Mask') && B.Layer == 'B.SilkS'))")
+  (constraint silk_clearance (min 0.15mm))
+)
+
+(rule "JLCPCB: Copper to board edge"
+  (condition "A.Type == 'Track' || A.Type == 'Via' || A.Type == 'Pad' || A.Type == 'Zone'")
+  (constraint edge_clearance (min 0.2mm))
+)

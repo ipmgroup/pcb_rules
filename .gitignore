@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local catalog pages used by beta_stackup.py
+_cat_*.html
+
+# OS and editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
+.idea/
+
+# Altium scraps
+History/
+__Previews/
+*.PrjPCBStructure
+
+# KiCad scraps (board and rules files stay)
+fp-info-cache
+~*.lck
+*.kicad_prl
+*-backups/
+_autosave*

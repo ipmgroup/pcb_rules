@@ -1,0 +1,84 @@
+(version 1)
+# WEdirekt rigid FR4. finished copper 17 um on every layer (design guide column 18 um, etched, no plating).
+# IPC-A-600 Class 2. Pool manufacturing covers up to 8 layers.
+# Source: https://www.wedirekt.com/en/content/technology/pcbs
+#         basic_design-guide_110325_en_web.pdf, Conductive Pattern, 03/25
+# Checked 2026-10-20.
+#
+# Design guide 03/25 calls this finished copper 18 um. Track, track-track and pad-track 0.085mm. Pad to pad 0.17mm. Only with etching, without galvanic plating. basic6_ml6_155_17 plates the outer foil from 17um up to 35um, so that stackup stays on WEdirekt_35um.
+#
+# This copper is within the 35 um limit, so the 100 um ring to the drill applies.
+# Smallest via: finished hole 0.10 mm, pad 0.45 mm.
+# Usual via: finished hole 0.25 mm, pad 0.60 mm.
+# The drill is 0.15 mm larger than the finished hole, so the ring to the finished hole is 0.175 mm.
+# BGA pitch 0.80 mm with a 0.40 mm solder pad: through via pad 0.50 mm, finished hole 0.15 mm.
+# A laser microvia pad below 0.35 mm is enlarged by WEdirekt to 0.35 mm.
+# Aspect ratio for a laser microvia is 1:0.8 (diameter to depth). Buried vias are 1:10.
+# Aspect ratio for a plated through hole is 1:10 (hole depth to drill diameter).
+#
+# Solder mask is not a custom-rule constraint. In Board Setup > Solder Mask/Paste set
+# solder mask expansion to 0.05 mm. WEdirekt opens the mask to pad diameter + 0.10 mm
+# and wants a mask web of at least 0.07 mm.
+# A via opening is the finished hole + 0.25 mm, so the outer part of the ring stays under the mask.
+# Silkscreen stroke is at least 0.08 mm. Character height is at least 1.00 mm, because finished copper is 80 um or less.
+# Legend to solder mask opening is at least 0.10 mm.
+#
+# Copper to a routed edge is 0.25 mm. A V-scored edge needs more:
+# 0.40 mm at 0.8-1.0 mm board, 0.50 mm at 1.55 mm, 0.60 mm at 2.0 mm, 0.70 mm at 2.4 mm, 0.80 mm at 3.0 mm.
+# KiCad keeps the last matching rule.
+# Copper clearance on an inner layer with no via pad (design guide): finished hole
+# 0.25 mm -> 0.80 mm, 0.20 mm -> 0.75 mm, 0.15 mm -> 0.70 mm, 0.10 mm -> 0.65 mm.
+# With a pad on that layer, the copper class of this file applies instead.
+
+(rule "WEdirekt: Track width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.085mm))
+)
+
+(rule "WEdirekt: Copper clearance"
+  (condition "A.Type != 'Text' && A.Type != 'Graphic' && B.Type != 'Text' && B.Type != 'Graphic'")
+  (constraint clearance (min 0.085mm))
+)
+
+(rule "WEdirekt: Pad to pad clearance"
+  (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Net != B.Net")
+  (constraint clearance (min 0.17mm))
+)
+
+(rule "WEdirekt: Via hole and pad"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.1mm))
+  (constraint via_diameter (min 0.45mm))
+  (constraint annular_width (min 0.175mm))
+)
+
+(rule "WEdirekt: PTH annular ring"
+  (condition "A.Type == 'Pad' && A.isPlated()")
+  (constraint annular_width (min 0.175mm))
+)
+
+(rule "WEdirekt: Hole to hole"
+  (constraint hole_to_hole (min 0.4mm))
+)
+
+(rule "WEdirekt: Copper to board edge"
+  (condition "A.Type == 'Track' || A.Type == 'Via' || A.Type == 'Pad' || A.Type == 'Zone'")
+  (constraint edge_clearance (min 0.25mm))
+)
+
+(rule "WEdirekt: Silkscreen stroke"
+  (layer "?.SilkS")
+  (condition "A.Type == 'Text' || A.Type == 'Text Box'")
+  (constraint text_thickness (min 0.08mm))
+)
+
+(rule "WEdirekt: Silkscreen height"
+  (layer "?.SilkS")
+  (condition "A.Type == 'Text' || A.Type == 'Text Box'")
+  (constraint text_height (min 1.00mm))
+)
+
+(rule "WEdirekt: Silkscreen to pad"
+  (condition "A.Type == 'Pad' && ((A.existsOnLayer('F.Mask') && B.Layer == 'F.SilkS') || (A.existsOnLayer('B.Mask') && B.Layer == 'B.SilkS'))")
+  (constraint silk_clearance (min 0.1mm))
+)
