@@ -9,7 +9,7 @@ Rule files live in one folder per supplier:
 | `BetaLayout/` | Beta LAYOUT rules (`beta_layout.RUL`, `beta_PCB-OVERSEAS.RUL`) |
 | `JLCPCB/` | JLCPCB 4- and 6-layer 1 oz rules |
 | `WEdirekt/` | Würth Elektronik rules, including V-score variants |
-| `BetaLayout_stackup/`, `JLCPCB_stackup/`, `MultiCB_stackup/` | Generated Altium stackups |
+| `BetaLayout_stackup/`, `JLCPCB_stackup/`, `MultiCB_stackup/`, `WEdirekt_stackup/` | Generated Altium stackups |
 
 `rul_editor/` is the editor. The `*_stackup.py` scripts at the repository root regenerate the stackup folders.
 
@@ -71,6 +71,7 @@ Each script reads its preset data and rewrites the matching `*_stackup` folder. 
 python beta_stackup.py
 python jlc_stackup.py
 python mcb_stackup.py
+python we_stackup.py
 ```
 
-`beta_stackup.py` writes the presets in `beta_presets.py` and `beta_pool_presets.py`. `jlc_stackup.py` and `mcb_stackup.py` write the presets at the top of each script.
+`beta_stackup.py` writes the presets in `beta_presets.py` and `beta_pool_presets.py`. `jlc_stackup.py` and `mcb_stackup.py` write the presets at the top of each script. `we_stackup.py` writes `we_presets.py` from the WEdirekt shop PDFs (`python we_stackup.py --from-pdfs <folder>`) and then the `WEdirekt_stackup/` files. Those shop builds are separate from the Würth BASIC sales stackups.
